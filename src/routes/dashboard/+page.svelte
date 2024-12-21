@@ -37,7 +37,10 @@
 <div class="mainContainer"> 
     <div class="headerConainer">
         <h1>Todo List</h1>
-        <button><i class="fa-regular fa-floppy-disk"></i><p>Save</p></button>
+        <div class="headerButtons">
+            <button><i class="fa-regular fa-floppy-disk"></i><p>Save</p></button>
+            <button><i class="fa-solid fa-right-from-bracket"></i><p>Logout</p></button>
+        </div>
     </div>
     <main>
         {#if todoList.length === 0 && currTodo === ''}
@@ -88,6 +91,12 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    .headerButtons {
+        display: flex;
+        align-items: center;
+        gap: 14px;
     }
 
     .headerConainer button {
@@ -164,6 +173,7 @@
 
     .enterTodo input:focus {
         outline: none;
+        font-size: 1.4rem
     }
 
     .enterTodo button {
