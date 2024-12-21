@@ -1,16 +1,35 @@
 <script>
+  import { authHandlers } from "../store/store";
+
 let email = "";
 let password = "";
 let confirmPass = "";
 let error = false;
 let register = false;
+let authenticating = false;
 
-function handleAuthenticate() {
+async function handleAuthenticate() {
+    if(authenticating) return;
+    
     if(!email || !password || (register && !confirmPass)) {
-        alert("Please fill in all the fields");
+        //alert("Please fill in all the fields");
         error = true;
         return;
     }
+    
+    authenticating = true;
+    
+    try{
+        if(!register){
+            await authHandlers.login(email, password);
+        } else {
+            await authHandlers.signup(email, password);
+        }
+    } catch(e) {
+        console.log(e);
+        error = true;
+    }
+
 }
 
 
@@ -41,7 +60,13 @@ function handleRegister() {
                     <input bind:value={confirmPass} type="password" placeholder="Confirm Password">
                 </label>
             {/if}
-            <button type="button">Submit</button>
+            <button on:click={handleAuthenticate} type="button" class="submitButton">
+                {#if authenticating}
+                    <i class="fa-solid fa-spinner spin"></i>
+                {:else}
+                    Submit
+                {/if}
+            </button>
     </form>
 
     <div class="options">
@@ -125,6 +150,8 @@ function handleRegister() {
         border-radius: 5px;
         cursor: pointer;
         font-size: 1.2rem;
+        display: grid;
+        place-items: center;
     }
 
     form button:hover {
@@ -155,6 +182,12 @@ function handleRegister() {
         left: 6px;
         border: 1px solid transparent;
         opacity: 0;
+    }
+
+    .error {
+        color : coral;
+        font-size: 0.9rem;
+        text-align: center;
     }
 
     .options{
@@ -202,6 +235,19 @@ function handleRegister() {
     .options > div p:last-of-type {
         color: cyan;
         cursor: pointer;
+    }
+
+    .spin{
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
 </style>
