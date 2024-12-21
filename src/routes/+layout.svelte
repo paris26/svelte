@@ -30,7 +30,7 @@
             const docSnap = await getDoc(docRef);
 
             if(!docSnap.exists()){
-                const useRef = doc(database, 'user', user.uid);
+                const useRef = doc(database, 'users', user.uid);
                 dataToSetToStore = {
                     email: user.email,
                     todos: [],

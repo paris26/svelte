@@ -28,6 +28,7 @@ async function handleAuthenticate() {
     } catch(e) {
         console.log(e);
         error = true;
+        authenticating = false;
     }
 
 }

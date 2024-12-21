@@ -1,9 +1,15 @@
 <script>
-  import { authHandlers } from "../../store/store";
+  import { doc, setDoc } from "firebase/firestore";
+  import { authHandlers, authStore } from "../../store/store";
+  import { database } from "$lib/firebase/firebase";
 
-    let todoList = ['Do the groceries'];
+    let todoList = [];
     let currTodo = '';
     let error = false;
+
+    authStore.subscribe(curr => {
+        todoList = curr.data?.todos || [];
+    })
     
     function addTodo() {
         if(!currTodo) {
@@ -32,53 +38,66 @@
          todoList = todoList.filter((_, i) => i !== index);
     }
 
+    async function saveTodos() {
+    try {
+        const userRef = doc(database, 'users', $authStore.user.uid);
+        await setDoc(userRef, 
+            {
+                todos: todoList
+            }, 
+            {
+                merge: true
+            });
+    }catch(e) {
+        console.log(e);
+    }
+}
 </script>
 
-
-
+{#if !$authStore.loading}
 <div class="mainContainer"> 
     <div class="headerConainer">
         <h1>Todo List</h1>
         <div class="headerButtons">
-            <button><i class="fa-regular fa-floppy-disk"></i><p>Save</p></button>
+            <button on:click={saveTodos}><i class="fa-regular fa-floppy-disk"></i><p>Save</p></button>
             <button on:click={authHandlers.logout}><i class="fa-solid fa-right-from-bracket"></i><p>Logout</p></button>
         </div>
     </div>
     <main>
         {#if todoList.length === 0 && currTodo === ''}
-            <p>No todos added yet</p>
-            <p>Add a todo to get started</p>
+        <p>No todos added yet</p>
+        <p>Add a todo to get started</p>
         {/if}
         {#each todoList as todo , index}
-            <div class="todo">
-                <p>
-                    {index + 1}. {todo}
-                </p>
-                <div class="actions">
-                    <i on:click={() => {editTodo(index)}} on:keydown={(e)=> {}} class="fa-regular fa-pen-to-square"></i>
-                    <i on:click={() => {removeTodo(index)}} on:keydown={()=> {}} class="fa-solid fa-trash"></i>
-                </div>
+        <div class="todo">
+            <p>
+                {index + 1}. {todo}
+            </p>
+            <div class="actions">
+                <i on:click={() => {editTodo(index)}} on:keydown={(e)=> {}} class="fa-regular fa-pen-to-square"></i>
+                <i on:click={() => {removeTodo(index)}} on:keydown={()=> {}} class="fa-solid fa-trash"></i>
             </div>
+        </div>
         {/each}
     </main>
     <div class="enterTodo {error ? 'errorBorder' : ''}" >  
-       <input 
-            bind:value={currTodo} 
-            on:keydown={(e) => {
-                if(e.key === 'Enter') addTodo();
-                }} 
+        <input 
+        bind:value={currTodo} 
+        on:keydown={(e) => {
+            if(e.key === 'Enter') addTodo();
+        }} 
             placeholder="Enter a todo"
-        >
-        <button on:click={addTodo}>Add</button>
+            >
+            <button on:click={addTodo}>Add</button>
+        </div>
     </div>
-</div>
-
-
-<style>
-
-    .mainContainer {
-        display: flex;
-        flex-direction: column;
+{/if}
+    
+    <style>
+        
+        .mainContainer {
+            display: flex;
+            flex-direction: column;
         justify-content: center;
         text-align: center;
         min-height : 100vh;
