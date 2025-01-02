@@ -1,109 +1,129 @@
 <script>
-  import { doc, setDoc } from "firebase/firestore";
-  import { authHandlers, authStore } from "../../store/store";
-  import { database } from "$lib/firebase/firebase";
+    import { doc, setDoc } from "firebase/firestore";
+    import { authHandlers, authStore } from "../../store/store";
+    import { database } from "$lib/firebase/firebase";
+    import TodoCarousel from "../../components/TodoCarousel.svelte";
 
     let todoList = [];
-    let currTodo = '';
+    let currTodo = "";
     let error = false;
 
-    authStore.subscribe(curr => {
+    authStore.subscribe((curr) => {
         todoList = curr.data?.todos || [];
-    })
-    
+    });
+
     function addTodo() {
-        if(!currTodo) {
+        if (!currTodo) {
             error = true;
             return;
         }
         todoList = [...todoList, currTodo];
-        currTodo = '';
+        currTodo = "";
         error = false;
     }
 
-
-   function editTodo(index) {
+    function editTodo(index) {
         currTodo = todoList[index];
         todoList = todoList.filter((_, i) => i !== index);
 
         setTimeout(() => {
-        const input = document.querySelector('.enterTodo input');
-        input.focus();
-        input.setSelectionRange(currTodo.length, currTodo.length);
-    }, 0);
-    }       
+            const input = document.querySelector(".enterTodo input");
+            input.focus();
+            input.setSelectionRange(currTodo.length, currTodo.length);
+        }, 0);
+    }
 
-
-    function removeTodo( index) {
-         todoList = todoList.filter((_, i) => i !== index);
+    function removeTodo(index) {
+        todoList = todoList.filter((_, i) => i !== index);
     }
 
     async function saveTodos() {
-    try {
-        const userRef = doc(database, 'users', $authStore.user.uid);
-        await setDoc(userRef, 
-            {
-                todos: todoList
-            }, 
-            {
-                merge: true
-            });
-    }catch(e) {
-        console.log(e);
+        try {
+            const userRef = doc(database, "users", $authStore.user.uid);
+            await setDoc(
+                userRef,
+                {
+                    todos: todoList,
+                },
+                {
+                    merge: true,
+                },
+            );
+        } catch (e) {
+            console.log(e);
+        }
     }
-}
 </script>
 
 {#if !$authStore.loading}
-<div class="mainContainer"> 
-    <div class="headerConainer">
-        <h1>Todo List</h1>
-        <div class="headerButtons">
-            <button on:click={saveTodos}><i class="fa-regular fa-floppy-disk"></i><p>Save</p></button>
-            <button on:click={authHandlers.logout}><i class="fa-solid fa-right-from-bracket"></i><p>Logout</p></button>
-        </div>
-    </div>
-    <main>
-        {#if todoList.length === 0 && currTodo === ''}
-        <p>No todos added yet</p>
-        <p>Add a todo to get started</p>
-        {/if}
-        {#each todoList as todo , index}
-        <div class="todo">
-            <p>
-                {index + 1}. {todo}
-            </p>
-            <div class="actions">
-                <i on:click={() => {editTodo(index)}} on:keydown={(e)=> {}} class="fa-regular fa-pen-to-square"></i>
-                <i on:click={() => {removeTodo(index)}} on:keydown={()=> {}} class="fa-solid fa-trash"></i>
+    <div class="mainContainer">
+        <div class="headerConainer">
+            <h1>Todo List</h1>
+            <div class="headerButtons">
+                <button on:click={saveTodos}
+                    ><i class="fa-regular fa-floppy-disk"></i>
+                    <p>Save</p></button
+                >
+                <button on:click={authHandlers.logout}
+                    ><i class="fa-solid fa-right-from-bracket"></i>
+                    <p>Logout</p></button
+                >
             </div>
         </div>
-        {/each}
-    </main>
-    <div class="enterTodo {error ? 'errorBorder' : ''}" >  
-        <input 
-        bind:value={currTodo} 
-        on:keydown={(e) => {
-            if(e.key === 'Enter') addTodo();
-        }} 
-            placeholder="Enter a todo"
-            >
+
+        <main>
+            <TodoCarousel {todoList} onEdit={editTodo} onRemove={removeTodo} />
+            {#if todoList.length === 0 && currTodo === ""}
+                <p>No todos added yet</p>
+                <p>Add a todo to get started</p>
+            {/if}
+            {#each todoList as todo, index}
+                <div class="todo">
+                    <p>
+                        {index + 1}. {todo}
+                    </p>
+                    <div class="actions">
+                        <i
+                            on:click={() => {
+                                editTodo(index);
+                            }}
+                            on:keydown={(e) => {}}
+                            class="fa-regular fa-pen-to-square"
+                        ></i>
+                        <i
+                            on:click={() => {
+                                removeTodo(index);
+                            }}
+                            on:keydown={() => {}}
+                            class="fa-solid fa-trash"
+                        ></i>
+                    </div>
+                </div>
+            {/each}
+        </main>
+        <div class="enterTodo {error ? 'errorBorder' : ''}">
+            <input
+                bind:value={currTodo}
+                on:keydown={(e) => {
+                    if (e.key === "Enter") addTodo();
+                }}
+                placeholder="Enter a todo"
+            />
             <button on:click={addTodo}>Add</button>
         </div>
     </div>
 {/if}
-    
-    <style>
-        
-        .mainContainer {
-            display: flex;
-            flex-direction: column;
+
+<style>
+    .mainContainer {
+        display: flex;
+        flex-direction: column;
         justify-content: center;
         text-align: center;
-        min-height : 100vh;
+        min-height: 100vh;
         gap: 24px;
         padding: 24px;
-        width : 100%;
+        width: 100%;
         max-width: 1000px;
         margin: 0 auto;
     }
@@ -134,11 +154,11 @@
     }
 
     .headerConainer button i {
-         font-size: 1.2rem;
+        font-size: 1.2rem;
     }
 
-    .headerConainer button:hover{
-           opacity: 0.8;
+    .headerConainer button:hover {
+        opacity: 0.8;
     }
 
     main {
@@ -154,7 +174,6 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-
     }
 
     .actions {
@@ -165,7 +184,7 @@
     }
 
     .actions i {
-         cursor: pointer;
+        cursor: pointer;
     }
 
     .actions i:hover {
@@ -194,7 +213,7 @@
 
     .enterTodo input:focus {
         outline: none;
-        font-size: 1.4rem
+        font-size: 1.4rem;
     }
 
     .enterTodo button {
@@ -204,12 +223,9 @@
         border: none;
         font-weight: 600;
         cursor: pointer;
-
     }
 
     .enterTodo button:hover {
         opacity: 0.8;
     }
-
-
 </style>
