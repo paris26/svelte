@@ -8,6 +8,16 @@
     let currTodo = "";
     let error = false;
 
+    $: showCookieConsent = !$authStore.cookies;
+
+    function handleAcceptCookies() {
+        authStore.update((store) => ({ ...store, cookies: true }));
+    }
+
+    function handleDeclineCookies() {
+        authStore.update((store) => ({ ...store, cookies: false }));
+    }
+
     authStore.subscribe((curr) => {
         todoList = curr.data?.todos || [];
     });
@@ -111,6 +121,26 @@
             />
             <button on:click={addTodo}>Add</button>
         </div>
+        {#if showCookieConsent}
+            <div class="cookie-consent">
+                <div class="cookie-content">
+                    <h2>Cookie Settings</h2>
+                    <p>
+                        We use cookies to enhance your browsing experience and
+                        analyze our traffic. Please choose whether to accept
+                        these cookies.
+                    </p>
+                    <div class="cookie-buttons">
+                        <button on:click={handleAcceptCookies} class="accept">
+                            Accept All
+                        </button>
+                        <button on:click={handleDeclineCookies} class="decline">
+                            Decline
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {/if}
     </div>
 {/if}
 
@@ -227,5 +257,65 @@
 
     .enterTodo button:hover {
         opacity: 0.8;
+    }
+
+    .cookie-consent {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        background: navy;
+        border: 1px solid navy;
+        border-radius: 5px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .cookie-content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .cookie-content h2 {
+        font-size: 1.2rem;
+        color: white;
+        margin: 0;
+    }
+
+    .cookie-content p {
+        font-size: 0.9rem;
+        color: white;
+        margin: 0;
+    }
+
+    .cookie-buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .cookie-buttons button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .cookie-buttons .accept {
+        background: blue;
+        color: white;
+    }
+
+    .cookie-buttons .decline {
+        background: transparent;
+        border: 1px solid blue;
+        color: white;
+    }
+
+    .cookie-buttons button:hover {
+        opacity: 0.9;
     }
 </style>
